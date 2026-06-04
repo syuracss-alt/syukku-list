@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, KeyRound, LayoutDashboard, Pencil, Plus, Save, Search, Trash2 } from 'lucide-react'
 import { supabase, hasSupabaseConfig } from './supabase'
 import { EMPTY_TASK, STATUS_META, STATUSES } from './constants'
-import { currency, formatDate, getMonthMatrix, isThisWeek, sameDate, toInputDate, toDate } from './date'
+import { currency, formatDate, getMonthMatrix, isThisMonth, sameDate, toInputDate, toDate } from './date'
 import './styles.css'
 
 function App() {
@@ -79,7 +79,7 @@ function Scheduler() {
   }, [tasks, query, statusFilter])
 
   const selectedTasks = useMemo(() => filteredTasks.filter((task) => task.due_date === selectedDate), [filteredTasks, selectedDate])
-  const weekTasks = useMemo(() => filteredTasks.filter((task) => isThisWeek(task.due_date) && task.status !== '완료'), [filteredTasks])
+  const monthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status !== '완료'), [filteredTasks, month])
   const unpaidDesignerTotal = useMemo(() => tasks.filter((task) => !task.designer_paid && task.designer_fee).reduce((sum, task) => sum + Number(task.designer_fee || 0), 0), [tasks])
   const waitingCount = useMemo(() => tasks.filter((task) => task.status === '입금 대기').length, [tasks])
   const confirmCount = useMemo(() => tasks.filter((task) => ['디자인 컨펌', '이식 컨펌'].includes(task.status)).length, [tasks])
@@ -142,7 +142,7 @@ function Scheduler() {
       <section className="summaryGrid">
         <SummaryCard title="입금 대기" value={`${waitingCount}건`} />
         <SummaryCard title="컨펌 대기" value={`${confirmCount}건`} />
-        <SummaryCard title="이번 주 일정" value={`${weekTasks.length}건`} />
+        <SummaryCard title="이번 달 일정" value={`${monthTasks.length}건`} />
         <SummaryCard title="디자이너 미정산" value={currency(unpaidDesignerTotal)} />
       </section>
 
@@ -156,7 +156,7 @@ function Scheduler() {
 
       <main className="mainGrid">
         <CalendarPanel month={month} setMonth={setMonth} selectedDate={selectedDate} setSelectedDate={setSelectedDate} tasks={filteredTasks} />
-        <WeekPanel tasks={weekTasks} onEdit={openEditTask} isAdmin={isAdmin} />
+        <MonthPanel tasks={monthTasks} month={month} onEdit={openEditTask} isAdmin={isAdmin} />
       </main>
 
       <section className="listGrid">
@@ -198,7 +198,12 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
           return (
             <button key={key} className={`dayCell ${date.getMonth() !== currentMonth ? 'muted' : ''} ${selectedDate === key ? 'selected' : ''} ${sameDate(date, today) ? 'today' : ''}`} onClick={() => setSelectedDate(key)}>
               <span>{date.getDate()}</span>
-              <div>{dayTasks.slice(0, 3).map((task) => <i key={task.id} className={STATUS_META[task.status]?.className || 'status'} />)}</div>
+              <div className="calendarTasks">
+                {dayTasks.slice(0, 3).map((task) => (
+                  <span key={task.id} className={`calendarTask ${STATUS_META[task.status]?.className || 'status'}`}>{task.client || '미입력'}</span>
+                ))}
+                {dayTasks.length > 3 && <em>+{dayTasks.length - 3}</em>}
+              </div>
             </button>
           )
         })}
@@ -207,12 +212,12 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
   )
 }
 
-function WeekPanel({ tasks, onEdit, isAdmin }) {
+function MonthPanel({ tasks, month, onEdit, isAdmin }) {
   return (
     <section className="card weekCard">
-      <div className="cardHeader"><div><LayoutDashboard size={20} /><h2>이번 주 일정</h2></div></div>
+      <div className="cardHeader"><div><LayoutDashboard size={20} /><h2>{month.getMonth() + 1}월 일정</h2></div></div>
       <div className="weekList">
-        {tasks.length === 0 && <div className="empty">이번 주 일정이 없어요.</div>}
+        {tasks.length === 0 && <div className="empty">이번 달 일정이 없어요.</div>}
         {tasks.map((task) => <TaskMini key={task.id} task={task} onClick={() => isAdmin && onEdit(task)} />)}
       </div>
     </section>

@@ -34,16 +34,10 @@ export function sameDate(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
 
-export function isThisWeek(value) {
+export function isThisMonth(value, baseDate = new Date()) {
   const date = toDate(value)
   if (!date) return false
-  const today = new Date()
-  const start = new Date(today)
-  start.setDate(today.getDate() - today.getDay())
-  start.setHours(0, 0, 0, 0)
-  const end = new Date(start)
-  end.setDate(start.getDate() + 7)
-  return date >= start && date < end
+  return date.getFullYear() === baseDate.getFullYear() && date.getMonth() === baseDate.getMonth()
 }
 
 export function currency(value) {
