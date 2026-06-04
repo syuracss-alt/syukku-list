@@ -1,0 +1,637 @@
+:root {
+  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: #20334d;
+  background: #edf7ff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e8f6ff 0%, #f7fbff 45%, #eef9f5 100%);
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .65;
+  cursor: default;
+}
+
+input, textarea, select {
+  width: 100%;
+  border: 1px solid #c8def0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #ffffff;
+  color: #26374d;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #88c8ef;
+  box-shadow: 0 0 0 4px rgba(136, 200, 239, .22);
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.loading, .setupCard, .loginCard {
+  width: min(440px, calc(100vw - 32px));
+  margin: 10vh auto;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 24px 80px rgba(113, 163, 203, .22);
+  border: 1px solid rgba(195, 224, 244, .9);
+  backdrop-filter: blur(18px);
+}
+
+.loading {
+  padding: 48px;
+  text-align: center;
+}
+
+.setupCard, .loginCard {
+  padding: 34px;
+}
+
+.loginCard {
+  display: grid;
+  gap: 14px;
+}
+
+.loginCard h1, .setupCard h1 {
+  margin: 6px 0 0;
+  font-size: 28px;
+}
+
+.loginCard p, .setupCard p {
+  margin: 0 0 8px;
+  color: #6b8198;
+  line-height: 1.6;
+}
+
+.brandMark {
+  width: 62px;
+  height: 62px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  color: #278bc4;
+  background: linear-gradient(145deg, #cceeff, #f1fbff);
+}
+
+.loginCard button, .topbar button, .modalActions button, .modalHeader button, .taskActions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: #67b7e6;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgba(83, 166, 220, .26);
+}
+
+.ghostButton {
+  background: #eef7fd !important;
+  color: #3b729b !important;
+  box-shadow: none !important;
+}
+
+.compact {
+  padding: 10px 12px !important;
+}
+
+.message {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #eef8ff;
+  color: #40749d;
+}
+
+.codeBox {
+  border-radius: 18px;
+  background: #183047;
+  color: #dff5ff;
+  padding: 18px;
+  line-height: 1.8;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  color: #5aaad9;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.topbar h1 {
+  margin: 4px 0 0;
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -0.04em;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.userBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #cce5f7;
+  background: rgba(255, 255, 255, .72);
+  border-radius: 999px;
+  padding: 10px 12px;
+  color: #4f6984;
+  font-weight: 700;
+}
+
+.userBadge span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #dff4ff;
+  color: #2d83b5;
+  font-size: 12px;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.summaryCard, .card {
+  background: rgba(255, 255, 255, .82);
+  border: 1px solid rgba(198, 227, 247, .9);
+  box-shadow: 0 18px 56px rgba(93, 149, 190, .15);
+  backdrop-filter: blur(16px);
+}
+
+.summaryCard {
+  border-radius: 24px;
+  padding: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+.summaryCard span {
+  color: #6f879e;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.summaryCard strong {
+  font-size: 26px;
+  letter-spacing: -0.03em;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #c8def0;
+  border-radius: 18px;
+  background: white;
+  padding: 0 12px;
+}
+
+.searchBox input {
+  border: 0;
+  box-shadow: none;
+  padding-left: 0;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.listGrid {
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.card {
+  border-radius: 28px;
+  padding: 20px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cardHeader > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2d83b5;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+  color: #20334d;
+}
+
+.monthButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.monthButtons button {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  color: #2d83b5;
+  background: #e9f7ff;
+}
+
+.weekdays, .calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.weekdays span {
+  text-align: center;
+  color: #7d94aa;
+  font-weight: 900;
+  font-size: 13px;
+  padding-bottom: 8px;
+}
+
+.calendarGrid {
+  gap: 8px;
+}
+
+.dayCell {
+  min-height: 88px;
+  border-radius: 18px;
+  background: #f7fcff;
+  border: 1px solid #d6ebf8;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #39526e;
+  text-align: left;
+}
+
+.dayCell > span {
+  font-weight: 900;
+}
+
+.dayCell.muted {
+  opacity: .42;
+}
+
+.dayCell.selected {
+  background: #dff3ff;
+  border-color: #7fc7ef;
+  box-shadow: inset 0 0 0 2px rgba(127, 199, 239, .2);
+}
+
+.dayCell.today > span {
+  color: #1788c9;
+}
+
+.dayCell div {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dayCell i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  padding: 0;
+  min-width: auto;
+}
+
+.weekList, .taskList {
+  display: grid;
+  gap: 10px;
+}
+
+.taskMini {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fcff;
+  border: 1px solid #d6ebf8;
+  color: #26374d;
+  text-align: left;
+}
+
+.taskMini div {
+  display: grid;
+  gap: 4px;
+}
+
+.taskMini strong {
+  color: #328fca;
+  font-size: 13px;
+}
+
+.taskMini span {
+  font-weight: 900;
+}
+
+.empty {
+  border: 1px dashed #b9d8ec;
+  color: #7892a8;
+  padding: 24px;
+  border-radius: 20px;
+  text-align: center;
+  background: rgba(246, 252, 255, .76);
+}
+
+.taskCard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid #d7ebf8;
+}
+
+.taskTitleLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.taskTitleLine h3 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+}
+
+.taskMeta, .taskMoney {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #60788e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.taskMeta span, .taskMoney span {
+  padding: 5px 9px;
+  background: #f1f8fd;
+  border-radius: 999px;
+}
+
+.taskCard p {
+  margin: 10px 0 0;
+  color: #506b83;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.materialLink {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  color: #2386c0;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.taskActions {
+  display: grid;
+  gap: 8px;
+  min-width: 160px;
+  align-self: start;
+}
+
+.taskActions button {
+  padding: 10px !important;
+}
+
+.taskActions .danger {
+  background: #ff8f9b;
+  box-shadow: 0 12px 28px rgba(255, 143, 155, .22);
+}
+
+.checkLine, .formCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  color: #547087;
+}
+
+.checkLine input, .formCheck input {
+  width: auto;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: max-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.waiting { background: #edf2f8; color: #65798e; }
+.paid { background: #dff4ff; color: #2f82b4; }
+.design { background: #d8eeff; color: #247cb3; }
+.designConfirm { background: #ece5ff; color: #7660bf; }
+.implement { background: #dff8f1; color: #2a9775; }
+.implementConfirm { background: #fff4ca; color: #ad8120; }
+.done { background: #dcf7df; color: #318046; }
+.paidText { color: #318046; }
+.unpaidText { color: #dc6572; }
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 65, 92, .32);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 20;
+}
+
+.modal {
+  width: min(900px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  border-radius: 30px;
+  background: #ffffff;
+  border: 1px solid #d0e9f8;
+  box-shadow: 0 28px 90px rgba(38, 82, 118, .32);
+  padding: 24px;
+}
+
+.modalHeader, .modalActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  color: #4f6984;
+  font-weight: 900;
+}
+
+.field span {
+  font-size: 13px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.formCheck {
+  align-self: end;
+  min-height: 48px;
+  padding: 0 6px;
+}
+
+@media (max-width: 1060px) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mainGrid, .listGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 16px;
+  }
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .headerActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .headerActions > * {
+    flex: 1;
+  }
+  .userBadge {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  .summaryGrid, .toolbar, .formGrid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 16px;
+    border-radius: 24px;
+  }
+  .calendarGrid {
+    gap: 5px;
+  }
+  .dayCell {
+    min-height: 58px;
+    padding: 7px;
+    border-radius: 14px;
+  }
+  .dayCell i {
+    width: 7px;
+    height: 7px;
+  }
+  .taskCard {
+    grid-template-columns: 1fr;
+  }
+  .taskTitleLine {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .taskActions {
+    grid-template-columns: 1fr 1fr;
+    min-width: 0;
+  }
+  .taskActions select, .taskActions .checkLine {
+    grid-column: 1 / -1;
+  }
+  .loginCard, .setupCard {
+    padding: 24px;
+    border-radius: 26px;
+  }
+}
