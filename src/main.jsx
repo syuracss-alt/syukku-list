@@ -33,7 +33,7 @@ function App() {
         return
       }
       const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-      setProfile(data || { id: session.user.id, display_name: session.user.email, role: 'viewer' })
+      setProfile(data || { id: session.user.id, display_name: getLoginId(session.user.email), role: 'viewer' })
     }
     loadProfile()
   }, [session])
@@ -52,7 +52,7 @@ function SetupGuide() {
   return (
     <PageShell>
       <div className="setupCard">
-        <h1>Pastel Work Scheduler</h1>
+        <h1>슈꾸 작업시트</h1>
         <p>Supabase 환경변수를 먼저 설정해 주세요.</p>
         <div className="codeBox">VITE_SUPABASE_URL<br />VITE_SUPABASE_ANON_KEY</div>
       </div>
@@ -60,8 +60,22 @@ function SetupGuide() {
   )
 }
 
+const LOGIN_DOMAIN = 'syukku.local'
+
+function getLoginId(email) {
+  return String(email || '').replace(`@${LOGIN_DOMAIN}`, '')
+}
+
+function toLoginEmail(loginId) {
+  return `${String(loginId || '').trim().toLowerCase()}@${LOGIN_DOMAIN}`
+}
+
+function isValidLoginId(loginId) {
+  return /^[a-zA-Z0-9._-]{2,32}$/.test(String(loginId || '').trim())
+}
+
 function Login() {
-  const [email, setEmail] = useState('')
+  const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState('login')
   const [message, setMessage] = useState('')
@@ -71,12 +85,25 @@ function Login() {
     event.preventDefault()
     setBusy(true)
     setMessage('')
-    const action = mode === 'login'
-      ? supabase.auth.signInWithPassword({ email, password })
-      : supabase.auth.signUp({ email, password })
-    const { error } = await action
-    if (error) setMessage(error.message)
-    else setMessage(mode === 'login' ? '로그인 완료' : '가입 완료 후 이메일 확인이 필요할 수 있어요.')
+    const id = loginId.trim().toLowerCase()
+    if (!isValidLoginId(id)) {
+      setMessage('아이디는 영문, 숫자, 점, 밑줄, 하이픈만 2~32자로 입력해 주세요.')
+      setBusy(false)
+      return
+    }
+    const email = toLoginEmail(id)
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) setMessage(error.message)
+      else setMessage('로그인 완료')
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: id } } })
+      if (error) setMessage(error.message)
+      else {
+        if (data.user) await supabase.from('profiles').upsert({ id: data.user.id, display_name: id, role: 'viewer' })
+        setMessage('계정 생성 완료')
+      }
+    }
     setBusy(false)
   }
 
@@ -84,9 +111,9 @@ function Login() {
     <PageShell>
       <form className="loginCard" onSubmit={submit}>
         <div className="brandMark"><CalendarDays size={32} /></div>
-        <h1>Pastel Work Scheduler</h1>
-        <p>작업 일정과 디자이너 정산을 함께 확인하는 내부 스케줄러</p>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일" required />
+        <h1>슈꾸 작업시트</h1>
+        <p>작업 일정과 디자이너 정산을 함께 확인하는 내부 작업시트</p>
+        <input value={loginId} onChange={(e) => setLoginId(e.target.value)} type="text" placeholder="아이디" required autoComplete="username" />
         <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="비밀번호" required minLength={6} />
         <button disabled={busy}>{busy ? '처리 중' : mode === 'login' ? '로그인' : '계정 만들기'}</button>
         <button type="button" className="ghostButton" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>{mode === 'login' ? '처음 사용하기' : '로그인으로 돌아가기'}</button>
@@ -178,11 +205,11 @@ function Scheduler({ session, profile }) {
     <PageShell>
       <header className="topbar">
         <div>
-          <div className="eyebrow">Pastel Work Scheduler</div>
+          <div className="eyebrow">슈꾸 작업시트</div>
           <h1>작업 스케줄러</h1>
         </div>
         <div className="headerActions">
-          <div className="userBadge"><UserRound size={16} />{profile?.display_name || session.user.email}<span>{isAdmin ? '관리자' : '확인용'}</span></div>
+          <div className="userBadge"><UserRound size={16} />{profile?.display_name || getLoginId(session.user.email)}<span>{isAdmin ? '관리자' : '확인용'}</span></div>
           {isAdmin && <button onClick={openNewTask}><Plus size={18} />작업 등록</button>}
           <button className="ghostButton compact" onClick={() => supabase.auth.signOut()}><LogOut size={16} />로그아웃</button>
         </div>
