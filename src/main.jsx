@@ -1,47 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, LayoutDashboard, LogOut, Pencil, Plus, Save, Search, Trash2, UserRound } from 'lucide-react'
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, KeyRound, LayoutDashboard, Pencil, Plus, Save, Search, Trash2 } from 'lucide-react'
 import { supabase, hasSupabaseConfig } from './supabase'
 import { EMPTY_TASK, STATUS_META, STATUSES } from './constants'
 import { currency, formatDate, getMonthMatrix, isThisWeek, sameDate, toInputDate, toDate } from './date'
 import './styles.css'
 
 function App() {
-  const [session, setSession] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!hasSupabaseConfig) {
-      setLoading(false)
-      return
-    }
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      setLoading(false)
-    })
-    const { data: listener } = supabase.auth.onAuthStateChange((_, nextSession) => {
-      setSession(nextSession)
-    })
-    return () => listener.subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    async function loadProfile() {
-      if (!session?.user) {
-        setProfile(null)
-        return
-      }
-      const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-      setProfile(data || { id: session.user.id, display_name: getLoginId(session.user.email), role: 'viewer' })
-    }
-    loadProfile()
-  }, [session])
-
   if (!hasSupabaseConfig) return <SetupGuide />
-  if (loading) return <PageShell><div className="loading">불러오는 중</div></PageShell>
-  if (!session) return <Login />
-  return <Scheduler session={session} profile={profile} />
+  return <Scheduler />
 }
 
 function PageShell({ children }) {
@@ -60,71 +27,9 @@ function SetupGuide() {
   )
 }
 
-const LOGIN_DOMAIN = 'syukku.local'
-
-function getLoginId(email) {
-  return String(email || '').replace(`@${LOGIN_DOMAIN}`, '')
-}
-
-function toLoginEmail(loginId) {
-  return `${String(loginId || '').trim().toLowerCase()}@${LOGIN_DOMAIN}`
-}
-
-function isValidLoginId(loginId) {
-  return /^[a-zA-Z0-9._-]{2,32}$/.test(String(loginId || '').trim())
-}
-
-function Login() {
-  const [loginId, setLoginId] = useState('')
-  const [password, setPassword] = useState('')
-  const [mode, setMode] = useState('login')
-  const [message, setMessage] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  async function submit(event) {
-    event.preventDefault()
-    setBusy(true)
-    setMessage('')
-    const id = loginId.trim().toLowerCase()
-    if (!isValidLoginId(id)) {
-      setMessage('아이디는 영문, 숫자, 점, 밑줄, 하이픈만 2~32자로 입력해 주세요.')
-      setBusy(false)
-      return
-    }
-    const email = toLoginEmail(id)
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setMessage(error.message)
-      else setMessage('로그인 완료')
-    } else {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: id } } })
-      if (error) setMessage(error.message)
-      else {
-        if (data.user) await supabase.from('profiles').upsert({ id: data.user.id, display_name: id, role: 'viewer' })
-        setMessage('계정 생성 완료')
-      }
-    }
-    setBusy(false)
-  }
-
-  return (
-    <PageShell>
-      <form className="loginCard" onSubmit={submit}>
-        <div className="brandMark"><CalendarDays size={32} /></div>
-        <h1>슈꾸 작업시트</h1>
-        <p>작업 일정과 디자이너 정산을 함께 확인하는 내부 작업시트</p>
-        <input value={loginId} onChange={(e) => setLoginId(e.target.value)} type="text" placeholder="아이디" required autoComplete="username" />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="비밀번호" required minLength={6} />
-        <button disabled={busy}>{busy ? '처리 중' : mode === 'login' ? '로그인' : '계정 만들기'}</button>
-        <button type="button" className="ghostButton" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>{mode === 'login' ? '처음 사용하기' : '로그인으로 돌아가기'}</button>
-        {message && <div className="message">{message}</div>}
-      </form>
-    </PageShell>
-  )
-}
-
-function Scheduler({ session, profile }) {
-  const isAdmin = profile?.role === 'admin'
+function Scheduler() {
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || ''
+  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('syukku-admin') === '1')
   const [tasks, setTasks] = useState([])
   const [month, setMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(toInputDate(new Date()))
@@ -133,6 +38,25 @@ function Scheduler({ session, profile }) {
   const [editingTask, setEditingTask] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  function toggleAdmin() {
+    if (isAdmin) {
+      localStorage.removeItem('syukku-admin')
+      setIsAdmin(false)
+      return
+    }
+    if (!adminPassword) {
+      window.alert('Netlify 환경변수에 VITE_ADMIN_PASSWORD를 먼저 등록해 주세요.')
+      return
+    }
+    const input = window.prompt('관리자 비밀번호를 입력해 주세요.')
+    if (input === adminPassword) {
+      localStorage.setItem('syukku-admin', '1')
+      setIsAdmin(true)
+    } else if (input !== null) {
+      window.alert('비밀번호가 맞지 않아요.')
+    }
+  }
 
   async function loadTasks() {
     const { data } = await supabase.from('tasks').select('*').order('due_date', { ascending: true })
@@ -180,7 +104,7 @@ function Scheduler({ session, profile }) {
       updated_at: new Date().toISOString()
     }
     if (editingTask?.id) await supabase.from('tasks').update(payload).eq('id', editingTask.id)
-    else await supabase.from('tasks').insert({ ...payload, created_by: session.user.id })
+    else await supabase.from('tasks').insert(payload)
     setFormOpen(false)
     setEditingTask(null)
     await loadTasks()
@@ -209,9 +133,9 @@ function Scheduler({ session, profile }) {
           <h1>작업 스케줄러</h1>
         </div>
         <div className="headerActions">
-          <div className="userBadge"><UserRound size={16} />{profile?.display_name || getLoginId(session.user.email)}<span>{isAdmin ? '관리자' : '확인용'}</span></div>
+          <div className="userBadge"><KeyRound size={16} />{isAdmin ? '관리자 모드' : '조회 모드'}<span>{isAdmin ? '수정 가능' : '확인용'}</span></div>
           {isAdmin && <button onClick={openNewTask}><Plus size={18} />작업 등록</button>}
-          <button className="ghostButton compact" onClick={() => supabase.auth.signOut()}><LogOut size={16} />로그아웃</button>
+          <button className="ghostButton compact" onClick={toggleAdmin}>{isAdmin ? '관리자 잠금' : '관리자 열기'}</button>
         </div>
       </header>
 
