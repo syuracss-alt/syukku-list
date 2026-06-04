@@ -248,7 +248,38 @@ a {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.calendarCard, .weekCard {
+  height: 100%;
+}
+
+.weekCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.weekCard .weekList {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.weekCard .weekList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.weekCard .weekList::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b8ddf4;
+}
+
+.weekCard .weekList::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #edf8ff;
 }
 
 .listGrid {
@@ -590,6 +621,9 @@ a {
   }
   .mainGrid, .listGrid {
     grid-template-columns: 1fr;
+  }
+  .weekCard {
+    max-height: 620px;
   }
 }
 
