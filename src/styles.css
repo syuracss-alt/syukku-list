@@ -248,14 +248,15 @@ a {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr);
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
-.calendarCard, .weekCard {
-  height: 100%;
+.calendarCard {
+  height: fit-content;
 }
 
 .weekCard {
+  height: 676px;
   display: flex;
   flex-direction: column;
   min-height: 0;
