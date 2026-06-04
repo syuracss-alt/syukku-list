@@ -650,3 +650,140 @@ a {
     border-radius: 26px;
   }
 }
+
+.taskMini {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 14px;
+}
+
+.taskMiniInfo {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  box-shadow: none;
+}
+
+.taskMiniActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.miniDetailButton, .miniMaterialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 8px 11px;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.miniDetailButton {
+  background: #eef7fd;
+  color: #3b729b;
+}
+
+.miniMaterialLink {
+  background: #dff4ff;
+  color: #2f82b4;
+}
+
+.detailModal {
+  width: min(720px, 100%);
+}
+
+.detailTop {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.detailPay {
+  font-size: 13px;
+  font-weight: 900;
+  border-radius: 999px;
+  background: #f1f8fc;
+  padding: 7px 11px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detailItem {
+  border: 1px solid #d7ebf8;
+  background: #f8fcff;
+  border-radius: 18px;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.detailItem span, .detailNote span {
+  color: #6f879e;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.detailItem strong {
+  color: #20334d;
+  word-break: break-word;
+}
+
+.detailNote {
+  margin-top: 12px;
+  border: 1px solid #d7ebf8;
+  background: #f8fcff;
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.detailNote p {
+  margin: 8px 0 0;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.detailActions button, .materialLink.big {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: #67b7e6;
+  color: white;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(83, 166, 220, .26);
+}
+
+@media (max-width: 760px) {
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -38,6 +38,7 @@ function Scheduler() {
   const [editingTask, setEditingTask] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [detailTask, setDetailTask] = useState(null)
 
   function toggleAdmin() {
     if (isAdmin) {
@@ -78,7 +79,6 @@ function Scheduler() {
     })
   }, [tasks, query, statusFilter])
 
-  const selectedTasks = useMemo(() => filteredTasks.filter((task) => task.due_date === selectedDate), [filteredTasks, selectedDate])
   const monthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status !== '완료'), [filteredTasks, month])
   const unpaidDesignerTotal = useMemo(() => tasks.filter((task) => !task.designer_paid && task.designer_fee).reduce((sum, task) => sum + Number(task.designer_fee || 0), 0), [tasks])
   const waitingCount = useMemo(() => tasks.filter((task) => task.status === '입금 대기').length, [tasks])
@@ -156,14 +156,10 @@ function Scheduler() {
 
       <main className="mainGrid">
         <CalendarPanel month={month} setMonth={setMonth} selectedDate={selectedDate} setSelectedDate={setSelectedDate} tasks={filteredTasks} />
-        <MonthPanel tasks={monthTasks} month={month} onEdit={openEditTask} isAdmin={isAdmin} />
+        <MonthPanel tasks={monthTasks} month={month} onDetail={setDetailTask} />
       </main>
 
-      <section className="listGrid">
-        <TaskSection title={`${formatDate(selectedDate)} 일정`} tasks={selectedTasks} isAdmin={isAdmin} onEdit={openEditTask} onDelete={deleteTask} onQuickUpdate={quickUpdate} />
-        <TaskSection title="전체 작업" tasks={filteredTasks} isAdmin={isAdmin} onEdit={openEditTask} onDelete={deleteTask} onQuickUpdate={quickUpdate} />
-      </section>
-
+      {detailTask && <TaskDetailModal task={detailTask} isAdmin={isAdmin} onClose={() => setDetailTask(null)} onEdit={(task) => { setDetailTask(null); openEditTask(task) }} />}
       {formOpen && <TaskModal task={editingTask} onClose={() => setFormOpen(false)} onSave={saveTask} busy={busy} />}
     </PageShell>
   )
@@ -212,13 +208,13 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
   )
 }
 
-function MonthPanel({ tasks, month, onEdit, isAdmin }) {
+function MonthPanel({ tasks, month, onDetail }) {
   return (
     <section className="card weekCard">
       <div className="cardHeader"><div><LayoutDashboard size={20} /><h2>{month.getMonth() + 1}월 일정</h2></div></div>
       <div className="weekList">
         {tasks.length === 0 && <div className="empty">이번 달 일정이 없어요.</div>}
-        {tasks.map((task) => <TaskMini key={task.id} task={task} onClick={() => isAdmin && onEdit(task)} />)}
+        {tasks.map((task) => <TaskMini key={task.id} task={task} onClick={() => onDetail(task)} />)}
       </div>
     </section>
   )
@@ -226,11 +222,49 @@ function MonthPanel({ tasks, month, onEdit, isAdmin }) {
 
 function TaskMini({ task, onClick }) {
   return (
-    <button className="taskMini" onClick={onClick}>
-      <div><strong>{formatDate(task.due_date)}</strong><span>{task.client}</span></div>
-      <StatusBadge status={task.status} />
-    </button>
+    <article className="taskMini">
+      <button className="taskMiniInfo" onClick={onClick}>
+        <div><strong>{formatDate(task.due_date)}</strong><span>{task.client || '클라이언트 미입력'}</span></div>
+        <StatusBadge status={task.status} />
+      </button>
+      <div className="taskMiniActions">
+        <button className="miniDetailButton" onClick={onClick}>상세 보기</button>
+        {task.material_url && <a className="miniMaterialLink" href={task.material_url} target="_blank" rel="noreferrer">자료 확인 <ExternalLink size={13} /></a>}
+      </div>
+    </article>
   )
+}
+
+
+function TaskDetailModal({ task, isAdmin, onClose, onEdit }) {
+  return (
+    <div className="modalBackdrop" onMouseDown={onClose}>
+      <div className="modal detailModal" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="modalHeader"><h2>{task.client || '클라이언트 미입력'}</h2><button type="button" onClick={onClose}>닫기</button></div>
+        <div className="detailTop">
+          <StatusBadge status={task.status} />
+          <span className={task.designer_paid ? 'paidText detailPay' : 'unpaidText detailPay'}>{task.designer_paid ? '디자이너 정산 완료' : '디자이너 정산 미완료'}</span>
+        </div>
+        <div className="detailGrid">
+          <DetailItem label="옵션" value={task.option_name || '-'} />
+          <DetailItem label="추가옵션" value={task.extra_options || '-'} />
+          <DetailItem label="시작일" value={formatDate(task.start_date)} />
+          <DetailItem label="마감일" value={formatDate(task.due_date)} />
+          <DetailItem label="금액" value={currency(task.price)} />
+          <DetailItem label="디자이너 정산금액" value={currency(task.designer_fee)} />
+        </div>
+        {task.notes && <div className="detailNote"><span>비고</span><p>{task.notes}</p></div>}
+        <div className="detailActions">
+          {task.material_url && <a className="materialLink big" href={task.material_url} target="_blank" rel="noreferrer">자료 확인 <ExternalLink size={16} /></a>}
+          {isAdmin && <button type="button" onClick={() => onEdit(task)}><Pencil size={16} />수정하기</button>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DetailItem({ label, value }) {
+  return <div className="detailItem"><span>{label}</span><strong>{value}</strong></div>
 }
 
 function TaskSection({ title, tasks, isAdmin, onEdit, onDelete, onQuickUpdate }) {
