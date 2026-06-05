@@ -195,11 +195,12 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
             <button key={key} className={`dayCell ${date.getMonth() !== currentMonth ? 'muted' : ''} ${selectedDate === key ? 'selected' : ''} ${sameDate(date, today) ? 'today' : ''}`} onClick={() => setSelectedDate(key)}>
               <span>{date.getDate()}</span>
               <div className="calendarTasks">
-                {dayTasks.slice(0, 3).map((task) => (
-                  <span key={task.id} className={`calendarTask ${STATUS_META[task.status]?.className || 'status'}`}>{task.client || '미입력'}</span>
-                ))}
-                {dayTasks.length > 3 && <em>+{dayTasks.length - 3}</em>}
-              </div>
+                {dayTasks.length > 0 && (
+                  <span className="calendarCount">
+                    {dayTasks.length}
+                  </span>
+                )}
+            </div>
             </button>
           )
         })}
