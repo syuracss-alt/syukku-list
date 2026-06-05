@@ -191,16 +191,24 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
         {dates.map((date) => {
           const key = toInputDate(date)
           const dayTasks = tasks.filter((task) => task.due_date === key)
+          const statusCounts = dayTasks.reduce((acc, task) => {
+            acc[task.status] = (acc[task.status] || 0) + 1
+            return acc
+          }, {})
           return (
             <button key={key} className={`dayCell ${date.getMonth() !== currentMonth ? 'muted' : ''} ${selectedDate === key ? 'selected' : ''} ${sameDate(date, today) ? 'today' : ''}`} onClick={() => setSelectedDate(key)}>
               <span>{date.getDate()}</span>
-              <div className="calendarTasks">
-                {dayTasks.length > 0 && (
-                  <span className="calendarCount">
-                    {dayTasks.length}
-                  </span>
-                )}
-            </div>
+              <div className="calendarTasks calendarTasksDesktop">
+                {dayTasks.slice(0, 3).map((task) => (
+                  <span key={task.id} className={`calendarTask ${STATUS_META[task.status]?.className || 'status'}`}>{task.client || '미입력'}</span>
+                ))}
+                {dayTasks.length > 3 && <em>+{dayTasks.length - 3}</em>}
+              </div>
+              <div className="calendarTasks calendarTasksMobile">
+                {Object.entries(statusCounts).map(([status, count]) => (
+                  <span key={status} className={`calendarDot ${STATUS_META[status]?.className || 'status'}`}>{count}</span>
+                ))}
+              </div>
             </button>
           )
         })}
