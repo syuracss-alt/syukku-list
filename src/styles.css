@@ -822,3 +822,36 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 760px) {
+  .calendarTasks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+  }
+
+  .calendarTask {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    padding: 0;
+    border-radius: 999px;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  .calendarTask::after {
+    content: attr(data-count);
+    font-size: 9px;
+    line-height: 14px;
+    font-weight: 900;
+    display: block;
+    text-align: center;
+  }
+
+  .dayCell {
+    min-height: 64px;
+    gap: 5px;
+  }
+}
