@@ -79,7 +79,8 @@ function Scheduler() {
     })
   }, [tasks, query, statusFilter])
 
-  const monthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status !== '완료'), [filteredTasks, month])
+  const activeMonthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status !== '완료'), [filteredTasks, month])
+  const completedMonthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status === '완료'), [filteredTasks, month])
   const unpaidDesignerTotal = useMemo(() => tasks.filter((task) => !task.designer_paid && task.designer_fee).reduce((sum, task) => sum + Number(task.designer_fee || 0), 0), [tasks])
   const waitingCount = useMemo(() => tasks.filter((task) => task.status === '입금 대기').length, [tasks])
   const confirmCount = useMemo(() => tasks.filter((task) => ['디자인 컨펌', '이식 컨펌'].includes(task.status)).length, [tasks])
@@ -142,7 +143,7 @@ function Scheduler() {
       <section className="summaryGrid">
         <SummaryCard title="입금 대기" value={`${waitingCount}건`} />
         <SummaryCard title="컨펌 대기" value={`${confirmCount}건`} />
-        <SummaryCard title="이번 달 일정" value={`${monthTasks.length}건`} />
+        <SummaryCard title="이번 달 일정" value={`${activeMonthTasks.length}건`} />
         <SummaryCard title="디자이너 미정산" value={currency(unpaidDesignerTotal)} />
       </section>
 
@@ -156,7 +157,7 @@ function Scheduler() {
 
       <main className="mainGrid">
         <CalendarPanel month={month} setMonth={setMonth} selectedDate={selectedDate} setSelectedDate={setSelectedDate} tasks={filteredTasks} />
-        <MonthPanel tasks={monthTasks} month={month} onDetail={setDetailTask} />
+        <MonthPanel activeTasks={activeMonthTasks} completedTasks={completedMonthTasks} month={month} onDetail={setDetailTask} />
       </main>
 
       {detailTask && <TaskDetailModal task={detailTask} isAdmin={isAdmin} onClose={() => setDetailTask(null)} onEdit={(task) => { setDetailTask(null); openEditTask(task) }} />}
@@ -217,21 +218,29 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
   )
 }
 
-function MonthPanel({ tasks, month, onDetail }) {
+function MonthPanel({ activeTasks, completedTasks, month, onDetail }) {
+  const hasTasks = activeTasks.length > 0 || completedTasks.length > 0
+
   return (
     <section className="card weekCard">
       <div className="cardHeader"><div><LayoutDashboard size={20} /><h2>{month.getMonth() + 1}월 일정</h2></div></div>
       <div className="weekList">
-        {tasks.length === 0 && <div className="empty">이번 달 일정이 없어요.</div>}
-        {tasks.map((task) => <TaskMini key={task.id} task={task} onClick={() => onDetail(task)} />)}
+        {!hasTasks && <div className="empty">이번 달 일정이 없어요.</div>}
+        {activeTasks.map((task) => <TaskMini key={task.id} task={task} onClick={() => onDetail(task)} />)}
+        {completedTasks.length > 0 && (
+          <div className="completedTaskGroup">
+            <div className="completedTaskDivider">완료된 일정</div>
+            {completedTasks.map((task) => <TaskMini key={task.id} task={task} onClick={() => onDetail(task)} completed />)}
+          </div>
+        )}
       </div>
     </section>
   )
 }
 
-function TaskMini({ task, onClick }) {
+function TaskMini({ task, onClick, completed = false }) {
   return (
-    <article className="taskMini">
+    <article className={completed ? "taskMini completedTaskMini" : "taskMini"}>
       <button className="taskMiniInfo" onClick={onClick}>
         <div><strong>{formatDate(task.due_date)}</strong><span>{task.client || '클라이언트 미입력'}</span></div>
         <StatusBadge status={task.status} />
