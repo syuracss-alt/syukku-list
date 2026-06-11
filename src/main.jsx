@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, KeyRound, LayoutDashboard, Pencil, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, EyeOff, ExternalLink, KeyRound, LayoutDashboard, Pencil, Plus, Save, Search, Trash2 } from 'lucide-react'
 import { supabase, hasSupabaseConfig } from './supabase'
 import { EMPTY_TASK, STATUS_META, STATUSES } from './constants'
 import { currency, formatDate, getMonthMatrix, isThisMonth, sameDate, toInputDate, toDate } from './date'
@@ -35,6 +35,7 @@ function Scheduler() {
   const [selectedDate, setSelectedDate] = useState(toInputDate(new Date()))
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('전체')
+  const [hideCompletedInCalendar, setHideCompletedInCalendar] = useState(() => localStorage.getItem('syukku-hide-completed-calendar') === '1')
   const [editingTask, setEditingTask] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -81,6 +82,10 @@ function Scheduler() {
 
   const activeMonthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status !== '완료'), [filteredTasks, month])
   const completedMonthTasks = useMemo(() => filteredTasks.filter((task) => isThisMonth(task.due_date, month) && task.status === '완료'), [filteredTasks, month])
+
+  useEffect(() => {
+    localStorage.setItem('syukku-hide-completed-calendar', hideCompletedInCalendar ? '1' : '0')
+  }, [hideCompletedInCalendar])
   const unpaidDesignerTotal = useMemo(() => tasks.filter((task) => !task.designer_paid && task.designer_fee).reduce((sum, task) => sum + Number(task.designer_fee || 0), 0), [tasks])
   const waitingCount = useMemo(() => tasks.filter((task) => task.status === '입금 대기').length, [tasks])
   const confirmCount = useMemo(() => tasks.filter((task) => ['디자인 컨펌', '이식 컨펌'].includes(task.status)).length, [tasks])
@@ -163,7 +168,7 @@ function Scheduler() {
       </section>
 
       <main className="mainGrid">
-        <CalendarPanel month={month} setMonth={setMonth} selectedDate={selectedDate} setSelectedDate={setSelectedDate} tasks={filteredTasks} />
+        <CalendarPanel month={month} setMonth={setMonth} selectedDate={selectedDate} setSelectedDate={setSelectedDate} tasks={filteredTasks} hideCompleted={hideCompletedInCalendar} setHideCompleted={setHideCompletedInCalendar} />
         <MonthPanel activeTasks={activeMonthTasks} completedTasks={completedMonthTasks} month={month} onDetail={setDetailTask} />
       </main>
 
@@ -177,7 +182,7 @@ function SummaryCard({ title, value }) {
   return <div className="summaryCard"><span>{title}</span><strong>{value}</strong></div>
 }
 
-function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }) {
+function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks, hideCompleted, setHideCompleted }) {
   const dates = getMonthMatrix(month)
   const currentMonth = month.getMonth()
   const today = new Date()
@@ -192,13 +197,24 @@ function CalendarPanel({ month, setMonth, selectedDate, setSelectedDate, tasks }
     <section className="card calendarCard">
       <div className="cardHeader">
         <div><CalendarDays size={20} /><h2>{month.getFullYear()}년 {month.getMonth() + 1}월</h2></div>
-        <div className="monthButtons"><button onClick={() => moveMonth(-1)}><ChevronLeft size={18} /></button><button onClick={() => moveMonth(1)}><ChevronRight size={18} /></button></div>
+        <div className="calendarHeaderActions">
+          <button
+            type="button"
+            className={hideCompleted ? 'hideCompletedButton active' : 'hideCompletedButton'}
+            onClick={() => setHideCompleted((prev) => !prev)}
+            aria-pressed={hideCompleted}
+          >
+            <EyeOff size={16} />
+            {hideCompleted ? '완료 숨김 중' : '완료된 항목 보지 않기'}
+          </button>
+          <div className="monthButtons"><button onClick={() => moveMonth(-1)}><ChevronLeft size={18} /></button><button onClick={() => moveMonth(1)}><ChevronRight size={18} /></button></div>
+        </div>
       </div>
       <div className="weekdays">{['일', '월', '화', '수', '목', '금', '토'].map((day) => <span key={day}>{day}</span>)}</div>
       <div className="calendarGrid">
         {dates.map((date) => {
           const key = toInputDate(date)
-          const dayTasks = tasks.filter((task) => task.due_date === key)
+          const dayTasks = tasks.filter((task) => task.due_date === key && (!hideCompleted || task.status !== '완료'))
           const statusCounts = dayTasks.reduce((acc, task) => {
             acc[task.status] = (acc[task.status] || 0) + 1
             return acc
