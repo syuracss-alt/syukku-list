@@ -836,6 +836,11 @@ a {
   box-shadow: 0 12px 28px rgba(83, 166, 220, .26);
 }
 
+.detailActions .dangerButton {
+  background: #ff8f9b;
+  box-shadow: 0 12px 28px rgba(255, 143, 155, .22);
+}
+
 
 .calendarTasksMobile {
   display: none;

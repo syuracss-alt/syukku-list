@@ -113,11 +113,18 @@ function Scheduler() {
   }
 
   async function deleteTask(task) {
-    if (!isAdmin) return
-    const ok = window.confirm(`${task.client} 작업을 삭제할까요?`)
-    if (!ok) return
-    await supabase.from('tasks').delete().eq('id', task.id)
+    if (!isAdmin || !task?.id) return false
+    const ok = window.confirm(`${task.client || '클라이언트 미입력'} 작업을 삭제할까요?`)
+    if (!ok) return false
+
+    const { error } = await supabase.from('tasks').delete().eq('id', task.id)
+    if (error) {
+      window.alert(`삭제에 실패했어요: ${error.message}`)
+      return false
+    }
+
     await loadTasks()
+    return true
   }
 
   async function quickUpdate(task, patch) {
@@ -160,7 +167,7 @@ function Scheduler() {
         <MonthPanel activeTasks={activeMonthTasks} completedTasks={completedMonthTasks} month={month} onDetail={setDetailTask} />
       </main>
 
-      {detailTask && <TaskDetailModal task={detailTask} isAdmin={isAdmin} onClose={() => setDetailTask(null)} onEdit={(task) => { setDetailTask(null); openEditTask(task) }} />}
+      {detailTask && <TaskDetailModal task={detailTask} isAdmin={isAdmin} onClose={() => setDetailTask(null)} onEdit={(task) => { setDetailTask(null); openEditTask(task) }} onDelete={async (task) => { const deleted = await deleteTask(task); if (deleted) setDetailTask(null) }} />}
       {formOpen && <TaskModal task={editingTask} onClose={() => setFormOpen(false)} onSave={saveTask} busy={busy} />}
     </PageShell>
   )
@@ -254,7 +261,7 @@ function TaskMini({ task, onClick, completed = false }) {
 }
 
 
-function TaskDetailModal({ task, isAdmin, onClose, onEdit }) {
+function TaskDetailModal({ task, isAdmin, onClose, onEdit, onDelete }) {
   return (
     <div className="modalBackdrop" onMouseDown={onClose}>
       <div className="modal detailModal" onMouseDown={(e) => e.stopPropagation()}>
@@ -275,6 +282,7 @@ function TaskDetailModal({ task, isAdmin, onClose, onEdit }) {
         <div className="detailActions">
           {task.material_url && <a className="materialLink big" href={task.material_url} target="_blank" rel="noreferrer">자료 확인 <ExternalLink size={16} /></a>}
           {isAdmin && <button type="button" onClick={() => onEdit(task)}><Pencil size={16} />수정하기</button>}
+          {isAdmin && <button type="button" className="dangerButton" onClick={() => onDelete(task)}><Trash2 size={16} />삭제하기</button>}
         </div>
       </div>
     </div>
